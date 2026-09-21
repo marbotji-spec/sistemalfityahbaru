@@ -14,39 +14,39 @@ export async function middleware(request: NextRequest) {
       : response;
   }
 
-  const supabase = createServerClient(
-    supabaseUrl,
-    supabaseAnonKey,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+  try {
+    const supabase = createServerClient(
+      supabaseUrl,
+      supabaseAnonKey,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+            response = NextResponse.next({ request });
+            cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+          },
         },
       },
-    },
-  );
+    );
 
-  let user: User | null = null;
-  try {
+    let user: User | null = null;
     const result = await supabase.auth.getUser();
     user = result.data.user;
+
+    if (isProtectedRoute && !user) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    if (request.nextUrl.pathname === "/login" && user) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
   } catch {
     return isProtectedRoute
-      ? NextResponse.redirect(new URL("/login?error=Sesi%20tidak%20dapat%20diverifikasi", request.url))
+      ? NextResponse.redirect(new URL("/login?error=Konfigurasi%20Supabase%20tidak%20valid", request.url))
       : response;
-  }
-
-  if (isProtectedRoute && !user) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  if (request.nextUrl.pathname === "/login" && user) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return response;
