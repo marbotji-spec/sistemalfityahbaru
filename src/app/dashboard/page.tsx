@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/lib/auth/actions";
 
@@ -23,7 +24,18 @@ export default async function DashboardPage() {
       <div className="mx-auto max-w-7xl px-5 py-10 lg:px-10">
         <p className="text-slate-500">Selamat datang, <span className="font-semibold text-[#112b45]">{profile?.full_name ?? user.email}</span>.</p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {["Data Santri", "Data Guru", "TPA & Tahfiz", "Laporan"].map((label) => <article key={label} className="rounded-xl border border-[#d8e3ec] bg-white p-5 shadow-sm"><p className="text-sm font-semibold text-[#112b45]">{label}</p><p className="mt-3 text-sm text-slate-500">Modul siap dikembangkan pada tahap berikutnya.</p><button className="mt-5 text-sm font-bold text-[#147fbd]">Buka modul &rarr;</button></article>)}
+          {[
+            ["Data Santri", "/admin/santri"],
+            ["Data Guru", "/admin/guru"],
+            ["TPA & Tahfiz", "/admin/tpa"],
+            ["Laporan", "/admin/aktivitas"]
+          ].map(([label, href]) => (
+            <article key={label} className="rounded-xl border border-[#d8e3ec] bg-white p-5 shadow-sm">
+              <p className="text-sm font-semibold text-[#112b45]">{label}</p>
+              <p className="mt-3 text-sm text-slate-500">Buka modul untuk melanjutkan pekerjaan.</p>
+              <Link href={href} className="mt-5 inline-block text-sm font-bold text-[#147fbd]">Buka modul &rarr;</Link>
+            </article>
+          ))}
         </div>
       </div>
     </main>
