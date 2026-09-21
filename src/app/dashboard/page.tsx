@@ -11,7 +11,7 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const { data: profile } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).single();
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).maybeSingle();
 
   return (
     <main className="min-h-screen bg-[#f7fafc]">
@@ -22,6 +22,8 @@ export default async function DashboardPage() {
         </div>
       </header>
       <div className="mx-auto max-w-7xl px-5 py-10 lg:px-10">
+        {profileError && <div className="mb-6 rounded-lg border border-[#f3b5bc] bg-[#fff1f2] p-4 text-sm text-[#9f1d2b]"><p className="font-bold">Profil belum dapat dimuat</p><p className="mt-1">Pastikan migration Supabase sudah dijalankan. Detail teknis: {profileError.message}</p></div>}
+        {!profile && !profileError && <div className="mb-6 rounded-lg border border-[#f3b5bc] bg-[#fff1f2] p-4 text-sm text-[#9f1d2b]"><p className="font-bold">Akun belum memiliki profil aplikasi</p><p className="mt-1">Jalankan migration profiles atau hubungi admin yayasan.</p></div>}
         <p className="text-slate-500">Selamat datang, <span className="font-semibold text-[#112b45]">{profile?.full_name ?? user.email}</span>.</p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[

@@ -1,6 +1,12 @@
 import { login } from "@/lib/auth/actions";
 
-export default function LoginPage() {
+interface LoginPageProps {
+  searchParams: Promise<{ error?: string }>;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#f7fafc] px-5 py-10">
       <section className="w-full max-w-md rounded-2xl border border-[#d8e3ec] bg-white p-8 shadow-[0_12px_40px_rgba(17,43,69,0.08)]">
@@ -9,6 +15,7 @@ export default function LoginPage() {
           <h1 className="mt-3 text-2xl font-bold text-[#112b45]">Masuk ke sistem</h1>
           <p className="mt-2 text-sm leading-6 text-slate-500">Gunakan akun internal yayasan untuk mengelola pendidikan Al-Qur&apos;an.</p>
         </div>
+        {params.error && <p role="alert" className="mb-5 rounded-lg bg-[#fff1f2] p-3 text-sm font-medium text-[#c91d2e]">{params.error}</p>}
         <form action={login} className="space-y-5">
           <label className="block text-sm font-semibold text-[#112b45]">
             Email
