@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sistem Manajemen Yayasan Pendidikan Al-Qur'an",
+  title: "Yayasan Al-Fityah | Sistem Manajemen Pendidikan Al-Qur'an",
   description:
     "Platform manajemen pendidikan Al-Qur'an untuk data santri, pembelajaran, tahfiz, dan laporan yayasan.",
 };

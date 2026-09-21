@@ -1,0 +1,13 @@
+<svg width="720" height="720" viewBox="0 0 720 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="720" height="720" fill="white"/>
+  <path d="M360 126C279 126 212 179 190 253" stroke="#1687C9" stroke-width="9" stroke-linecap="round"/>
+  <path d="M190 253C178 299 178 346 198 388" stroke="#E52A3A" stroke-width="9" stroke-linecap="round"/>
+  <path d="M360 126C441 126 508 179 530 253" stroke="#1687C9" stroke-width="9" stroke-linecap="round"/>
+  <path d="M530 253C542 299 542 346 522 388" stroke="#E52A3A" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="360" cy="205" r="26" fill="#1687C9"/>
+  <path d="M244 233C244 222 253 214 264 214H322C344 214 360 232 360 254V394C349 380 333 372 315 372H264C253 372 244 364 244 353V233Z" fill="#E52335"/>
+  <path d="M476 233C476 222 467 214 456 214H398C376 214 360 232 360 254V394C371 380 387 372 405 372H456C467 372 476 364 476 353V233Z" fill="#E52335"/>
+  <path d="M244 382H313C337 382 352 394 360 417V447C345 430 331 423 310 423H264C253 423 244 415 244 404V382Z" fill="#1687C9"/>
+  <path d="M476 382H407C383 382 368 394 360 417V447C375 430 389 423 410 423H456C467 423 476 415 476 404V382Z" fill="#1687C9"/>
+  <text x="360" y="520" text-anchor="middle" fill="#1687C9" font-family="Arial, sans-serif" font-size="34" font-weight="700" letter-spacing="1">YAYASAN AL FITYAH</text>
+</svg>
