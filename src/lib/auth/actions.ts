@@ -12,11 +12,22 @@ export async function login(formData: FormData) {
     redirect("/login?error=Email%20dan%20password%20wajib%20diisi");
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  let supabase;
+  try {
+    supabase = await createClient();
+  } catch {
+    redirect("/login?error=Environment%20Supabase%20belum%20terbaca%20di%20deployment%20ini");
+  }
+
+  let error: { message: string } | null = null;
+  try {
+    ({ error } = await supabase.auth.signInWithPassword({ email, password }));
+  } catch {
+    redirect("/login?error=Login%20gagal%2C%20periksa%20konfigurasi%20Supabase");
+  }
 
   if (error) {
-    redirect(`/login?error=${encodeURIComponent("Email atau password salah")}`);
+    redirect(`/login?error=${encodeURIComponent(error.message.includes("Invalid login credentials") ? "Email atau password salah" : error.message)}`);
   }
 
   revalidatePath("/", "layout");
