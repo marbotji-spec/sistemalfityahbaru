@@ -6,14 +6,13 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 
 const studentSchema = z.object({
-  public_code: z.string().trim().min(6).max(40).regex(/^[A-Za-z0-9-]+$/),
   full_name: z.string().trim().min(2).max(120),
-  nickname: z.string().trim().max(60).optional(),
-  gender: z.enum(["L", "P"]),
-  guardian_name: z.string().trim().min(2).max(120),
-  guardian_phone: z.string().trim().min(8).max(24),
-  program_id: z.string().uuid().optional(),
-  class_id: z.string().uuid().optional(),
+  nickname: z.preprocess((value) => value || undefined, z.string().trim().max(60).optional()),
+  gender: z.preprocess((value) => value || undefined, z.enum(["L", "P"]).optional()),
+  guardian_name: z.preprocess((value) => value || undefined, z.string().trim().max(120).optional()),
+  guardian_phone: z.preprocess((value) => value || undefined, z.string().trim().max(24).optional()),
+  program_id: z.preprocess((value) => value || undefined, z.string().uuid().optional()),
+  class_id: z.preprocess((value) => value || undefined, z.string().uuid().optional()),
 });
 
 export async function createStudent(formData: FormData) {
@@ -25,10 +24,14 @@ export async function createStudent(formData: FormData) {
   const parsed = studentSchema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) redirect("/admin/santri?error=Data%20santri%20belum%20valid");
 
+  const publicCode = `TPA-${new Date().getFullYear()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
   const { error } = await supabase.from("students").insert({
     ...parsed.data,
-    public_code: parsed.data.public_code.toUpperCase(),
+    public_code: publicCode,
     nickname: parsed.data.nickname || null,
+    gender: parsed.data.gender || null,
+    guardian_name: parsed.data.guardian_name || null,
+    guardian_phone: parsed.data.guardian_phone || null,
     program_id: parsed.data.program_id || null,
     class_id: parsed.data.class_id || null,
     created_by: user.id,

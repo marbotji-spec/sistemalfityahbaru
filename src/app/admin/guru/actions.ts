@@ -11,7 +11,7 @@ const teacherSchema = z.object({
   password: z.string().min(8).max(72),
   full_name: z.string().trim().min(2).max(120),
   nickname: z.string().trim().max(60).optional(),
-  phone: z.string().trim().min(8).max(24),
+  phone: z.string().trim().max(24).optional(),
   role: z.enum(["GURU", "KETUA_YAYASAN"]),
   role_guru: z.enum(["on"]).optional(),
   role_ketua_tpa: z.enum(["on"]).optional(),
@@ -36,7 +36,7 @@ export async function createTeacher(formData: FormData) {
   const { error: profileError } = await supabase.from("profiles").update({
     full_name: parsed.data.full_name,
     nickname: parsed.data.nickname || null,
-    phone: parsed.data.phone,
+    phone: parsed.data.phone || null,
     role: parsed.data.role,
     updated_at: new Date().toISOString(),
   }).eq("id", created.user.id);
