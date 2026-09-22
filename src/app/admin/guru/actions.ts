@@ -13,6 +13,9 @@ const teacherSchema = z.object({
   nickname: z.string().trim().max(60).optional(),
   phone: z.string().trim().min(8).max(24),
   role: z.enum(["GURU", "KETUA_YAYASAN"]),
+  role_guru: z.enum(["on"]).optional(),
+  role_ketua_tpa: z.enum(["on"]).optional(),
+  role_ketua_tahfiz: z.enum(["on"]).optional(),
 });
 
 export async function createTeacher(formData: FormData) {
@@ -39,6 +42,18 @@ export async function createTeacher(formData: FormData) {
   }).eq("id", created.user.id);
 
   if (profileError) redirect(`/admin/guru?error=${encodeURIComponent("Akun dibuat tetapi profil gagal disimpan")}`);
+  const additionalRoles = [
+    ...(parsed.data.role_guru ? ["GURU"] : []),
+    ...(parsed.data.role_ketua_tpa ? ["KETUA_TPA"] : []),
+    ...(parsed.data.role_ketua_tahfiz ? ["KETUA_TAHFIZ"] : []),
+  ].filter((role) => role !== parsed.data.role);
+
+  if (additionalRoles.length > 0) {
+    const { error: rolesError } = await supabase.from("user_roles").insert(
+      additionalRoles.map((role) => ({ user_id: created.user!.id, role, created_by: user.id })),
+    );
+    if (rolesError) redirect(`/admin/guru?error=${encodeURIComponent("Akun dibuat tetapi role tambahan gagal disimpan")}`);
+  }
   await supabase.from("audit_logs").insert({
     user_id: user.id,
     role: parsed.data.role,

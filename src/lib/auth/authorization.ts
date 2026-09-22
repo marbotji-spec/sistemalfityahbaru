@@ -12,7 +12,11 @@ export async function requireUser() {
 
 export async function requireRole(allowedRoles: AppRole[]) {
   const { supabase, user } = await requireUser();
-  const { data: profile } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).single();
-  if (!profile || !allowedRoles.includes(profile.role as AppRole)) redirect("/dashboard?error=Akses%20tidak%20diizinkan");
-  return { supabase, user, profile };
+  const [{ data: profile }, { data: additionalRoles }] = await Promise.all([
+    supabase.from("profiles").select("full_name, role").eq("id", user.id).single(),
+    supabase.from("user_roles").select("role").eq("user_id", user.id),
+  ]);
+  const roles = [profile?.role, ...(additionalRoles ?? []).map((item) => item.role)] as AppRole[];
+  if (!profile || !roles.some((role) => allowedRoles.includes(role))) redirect("/dashboard?error=Akses%20tidak%20diizinkan");
+  return { supabase, user, profile, roles };
 }
