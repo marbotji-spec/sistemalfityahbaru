@@ -14,11 +14,11 @@ export default async function DashboardPage() {
   const { data: profile, error: profileError } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).maybeSingle();
 
   return (
-    <main className="min-h-screen bg-[#f7fafc]">
-      <header className="border-b border-[#d8e3ec] bg-white px-5 py-4 lg:px-10">
+    <main className="min-h-screen bg-[#eef7fc]">
+      <header className="border-b border-white/20 bg-[#147fbd] px-5 py-4 text-white lg:px-10">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div><p className="text-sm font-bold uppercase tracking-[0.18em] text-[#147fbd]">Yayasan Al-Fityah</p><h1 className="mt-1 text-xl font-bold text-[#112b45]">Dashboard {profile?.role ?? "Internal"}</h1></div>
-          <form action={logout}><button className="rounded-lg border border-[#e52335] px-4 py-2 text-sm font-semibold text-[#e52335] hover:bg-[#fff1f2]">Keluar</button></form>
+          <div><p className="text-sm font-bold uppercase tracking-[0.18em] text-white">Yayasan Al-Fityah</p><h1 className="mt-1 text-xl font-bold text-white">Dashboard {profile?.role ?? "Internal"}</h1></div>
+          <form action={logout}><button className="rounded-lg bg-[#e52335] px-4 py-2 text-sm font-semibold text-white hover:bg-[#c91d2e]">Keluar</button></form>
         </div>
       </header>
       <div className="mx-auto max-w-7xl px-5 py-10 lg:px-10">
@@ -32,10 +32,10 @@ export default async function DashboardPage() {
             ["TPA & Tahfiz", "/admin/tpa"],
             ["Laporan", "/admin/aktivitas"]
           ].map(([label, href]) => (
-            <article key={label} className="rounded-xl border border-[#d8e3ec] bg-white p-5 shadow-sm">
+            <article key={label} className="rounded-xl border border-[#c8d7e3] bg-white p-5 shadow-sm">
               <p className="text-sm font-semibold text-[#112b45]">{label}</p>
               <p className="mt-3 text-sm text-slate-500">Buka modul untuk melanjutkan pekerjaan.</p>
-              <Link href={href} className="mt-5 inline-block text-sm font-bold text-[#147fbd]">Buka modul &rarr;</Link>
+              <Link href={href} className="mt-5 inline-block rounded-md bg-[#e52335] px-3 py-2 text-sm font-bold text-white hover:bg-[#c91d2e]">Buka modul &rarr;</Link>
             </article>
           ))}
         </div>
