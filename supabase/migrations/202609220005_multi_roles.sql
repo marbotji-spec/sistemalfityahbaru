@@ -29,8 +29,8 @@ security definer
 set search_path = public
 as $$
   select exists (
-    select 1 from public.current_user_roles() current_role
-    where current_role = any(required_roles)
+    select 1 from public.current_user_roles() as role_item
+    where role_item = any(required_roles)
   );
 $$;
 
