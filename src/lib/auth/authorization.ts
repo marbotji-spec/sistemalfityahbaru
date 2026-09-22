@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export type AppRole = "ADMIN" | "GURU" | "KETUA_YAYASAN" | "KETUA_TPA" | "KETUA_TAHFIDZH";
+export type AppRole = "ADMIN" | "GURU" | "GURU_TPA" | "GURU_TAHFIDZH" | "KETUA_YAYASAN" | "KETUA_TPA" | "KETUA_TAHFIDZH";
 
 export async function requireUser() {
   const supabase = await createClient();

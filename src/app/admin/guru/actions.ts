@@ -12,8 +12,10 @@ const teacherSchema = z.object({
   full_name: z.string().trim().min(2).max(120),
   nickname: z.string().trim().max(60).optional(),
   phone: z.string().trim().max(24).optional(),
-  role: z.enum(["GURU", "KETUA_YAYASAN"]),
+  role: z.enum(["GURU", "GURU_TPA", "GURU_TAHFIDZH", "KETUA_YAYASAN"]),
   role_guru: z.enum(["on"]).optional(),
+  role_guru_tpa: z.enum(["on"]).optional(),
+  role_guru_tahfizh: z.enum(["on"]).optional(),
   role_ketua_tpa: z.enum(["on"]).optional(),
   role_ketua_tahfizh: z.enum(["on"]).optional(),
 });
@@ -44,6 +46,8 @@ export async function createTeacher(formData: FormData) {
   if (profileError) redirect(`/admin/guru?error=${encodeURIComponent("Akun dibuat tetapi profil gagal disimpan")}`);
   const additionalRoles = [
     ...(parsed.data.role_guru ? ["GURU"] : []),
+    ...(parsed.data.role_guru_tpa ? ["GURU_TPA"] : []),
+    ...(parsed.data.role_guru_tahfizh ? ["GURU_TAHFIDZH"] : []),
     ...(parsed.data.role_ketua_tpa ? ["KETUA_TPA"] : []),
     ...(parsed.data.role_ketua_tahfizh ? ["KETUA_TAHFIDZH"] : []),
   ].filter((role) => role !== parsed.data.role);
@@ -69,8 +73,10 @@ export async function createTeacher(formData: FormData) {
 
 const roleSchema = z.object({
   user_id: z.string().uuid(),
-  role: z.enum(["GURU", "KETUA_YAYASAN"]),
+  role: z.enum(["GURU", "GURU_TPA", "GURU_TAHFIDZH", "KETUA_YAYASAN"]),
   role_guru: z.enum(["on"]).optional(),
+  role_guru_tpa: z.enum(["on"]).optional(),
+  role_guru_tahfizh: z.enum(["on"]).optional(),
   role_ketua_tpa: z.enum(["on"]).optional(),
   role_ketua_tahfizh: z.enum(["on"]).optional(),
 });
@@ -82,6 +88,8 @@ export async function updateTeacherRoles(formData: FormData) {
 
   const selectedRoles = [
     ...(parsed.data.role_guru ? ["GURU"] : []),
+    ...(parsed.data.role_guru_tpa ? ["GURU_TPA"] : []),
+    ...(parsed.data.role_guru_tahfizh ? ["GURU_TAHFIDZH"] : []),
     ...(parsed.data.role_ketua_tpa ? ["KETUA_TPA"] : []),
     ...(parsed.data.role_ketua_tahfizh ? ["KETUA_TAHFIDZH"] : []),
   ].filter((role) => role !== parsed.data.role);

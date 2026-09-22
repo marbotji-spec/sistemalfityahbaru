@@ -10,7 +10,7 @@ export default async function TeachersPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const { supabase } = await requireRole(["ADMIN", "KETUA_YAYASAN"]);
   const [{ data: teachers }, { data: additionalRoles }] = await Promise.all([
-    supabase.from("profiles").select("id, full_name, email, phone, role, status, created_at").in("role", ["GURU", "KETUA_YAYASAN"]).order("created_at", { ascending: false }),
+     supabase.from("profiles").select("id, full_name, email, phone, role, status, created_at").in("role", ["GURU", "GURU_TPA", "GURU_TAHFIDZH", "KETUA_YAYASAN"]).order("created_at", { ascending: false }),
     supabase.from("user_roles").select("user_id, role"),
   ]);
 
@@ -32,8 +32,8 @@ export default async function TeachersPage({ searchParams }: PageProps) {
               <label className="block text-sm font-semibold text-[#112b45]">Email login *<input name="email" type="email" required className="mt-1.5 w-full rounded-lg border border-[#c8d7e3] px-3 py-2 text-sm font-normal" /></label>
               <label className="block text-sm font-semibold text-[#112b45]">Password awal *<input name="password" type="password" minLength={8} required className="mt-1.5 w-full rounded-lg border border-[#c8d7e3] px-3 py-2 text-sm font-normal" placeholder="Minimal 8 karakter" /></label>
               <label className="block text-sm font-semibold text-[#112b45]">Nomor HP (opsional)<input name="phone" className="mt-1.5 w-full rounded-lg border border-[#c8d7e3] px-3 py-2 text-sm font-normal" /></label>
-              <label className="block text-sm font-semibold text-[#112b45]">Role utama<select name="role" className="mt-1.5 w-full rounded-lg border border-[#c8d7e3] px-3 py-2 text-sm font-normal"><option value="GURU">Guru</option><option value="KETUA_YAYASAN">Ketua Yayasan</option></select></label>
-              <fieldset className="space-y-2"><legend className="text-sm font-semibold text-[#112b45]">Role tambahan</legend><label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="role_guru" /> Guru</label><label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="role_ketua_tpa" /> Ketua TPA</label><label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="role_ketua_tahfizh" /> Ketua TAHFIDZH</label></fieldset>
+              <label className="block text-sm font-semibold text-[#112b45]">Role utama<select name="role" className="mt-1.5 w-full rounded-lg border border-[#c8d7e3] px-3 py-2 text-sm font-normal"><option value="GURU_TPA">Guru TPA</option><option value="GURU_TAHFIDZH">Guru TAHFIDZH</option><option value="KETUA_YAYASAN">Ketua Yayasan</option></select></label>
+              <fieldset className="space-y-2"><legend className="text-sm font-semibold text-[#112b45]">Role tambahan</legend><label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="role_guru_tpa" /> Guru TPA</label><label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="role_guru_tahfizh" /> Guru TAHFIDZH</label><label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="role_ketua_tpa" /> Ketua TPA</label><label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="role_ketua_tahfizh" /> Ketua TAHFIDZH</label></fieldset>
               <button className="w-full rounded-lg bg-[#e52335] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#c91d2e]">Buat akun guru</button>
             </form>
           </section>

@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Yayasan Al-Fityah | Sistem Manajemen Pendidikan Al-Qur'an",
   description:
-    "Platform manajemen pendidikan Al-Qur'an untuk data santri, pembelajaran, tahfiz, dan laporan yayasan.",
+    "Platform manajemen pendidikan Al-Qur'an untuk data santri, pembelajaran, TAHFIDZH, dan laporan yayasan.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
