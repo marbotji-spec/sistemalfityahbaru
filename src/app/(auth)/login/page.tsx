@@ -1,5 +1,6 @@
 import { login } from "@/lib/auth/actions";
 import Image from "next/image";
+import Link from "next/link";
 
 interface LoginPageProps {
   searchParams: Promise<{ error?: string }>;
@@ -29,6 +30,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </label>
           <button type="submit" className="w-full rounded-lg bg-[#e52335] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#c91d2e]">Masuk</button>
         </form>
+        <Link href="/forgot-password" className="mt-5 block text-center text-sm font-semibold text-[#147fbd]">Lupa password?</Link>
       </section>
     </main>
   );
