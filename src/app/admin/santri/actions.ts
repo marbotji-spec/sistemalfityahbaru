@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 const studentSchema = z.object({
   full_name: z.string().trim().min(2).max(120),
   nickname: z.preprocess((value) => value || undefined, z.string().trim().max(60).optional()),
+  nis: z.preprocess((value) => value || undefined, z.string().trim().max(40).optional()),
   gender: z.preprocess((value) => value || undefined, z.enum(["L", "P"]).optional()),
   guardian_name: z.preprocess((value) => value || undefined, z.string().trim().max(120).optional()),
   guardian_phone: z.preprocess((value) => value || undefined, z.string().trim().max(24).optional()),
@@ -29,6 +30,7 @@ export async function createStudent(formData: FormData) {
     ...parsed.data,
     public_code: publicCode,
     nickname: parsed.data.nickname || null,
+    nis: parsed.data.nis || null,
     gender: parsed.data.gender || null,
     guardian_name: parsed.data.guardian_name || null,
     guardian_phone: parsed.data.guardian_phone || null,
