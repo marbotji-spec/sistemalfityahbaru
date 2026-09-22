@@ -25,7 +25,13 @@ export async function createStudent(formData: FormData) {
   const parsed = studentSchema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) redirect("/admin/santri?error=Data%20santri%20belum%20valid");
 
-  const publicCode = `TPA-${new Date().getFullYear()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+  let programPrefix = "SANTRI";
+  if (parsed.data.program_id) {
+    const { data: program } = await supabase.from("programs").select("name").eq("id", parsed.data.program_id).maybeSingle();
+    const programName = program?.name?.toUpperCase() ?? "";
+    programPrefix = programName.includes("TAHF") ? "TAHFIDZH" : programName.includes("TPA") ? "TPA" : "SANTRI";
+  }
+  const publicCode = `${programPrefix}-${new Date().getFullYear()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
   const { error } = await supabase.from("students").insert({
     ...parsed.data,
     public_code: publicCode,
