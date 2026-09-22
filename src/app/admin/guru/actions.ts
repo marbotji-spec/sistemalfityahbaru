@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 const teacherSchema = z.object({
   email: z.string().trim().email().max(160),
+  password: z.string().min(8).max(72),
   full_name: z.string().trim().min(2).max(120),
   nickname: z.string().trim().max(60).optional(),
   phone: z.string().trim().min(8).max(24),
@@ -22,6 +23,7 @@ export async function createTeacher(formData: FormData) {
   const adminClient = createAdminClient();
   const { data: created, error } = await adminClient.auth.admin.createUser({
     email: parsed.data.email,
+    password: parsed.data.password,
     email_confirm: true,
     user_metadata: { full_name: parsed.data.full_name },
   });
