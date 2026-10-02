@@ -6,11 +6,21 @@ interface PageProps {
   searchParams: Promise<{ error?: string; success?: string }>;
 }
 
+const roleLabels: Record<string, string> = {
+  ADMIN: "Admin",
+  GURU: "Guru umum (akun lama)",
+  GURU_TPA: "Guru TPA",
+  GURU_TAHFIDZH: "Guru TAHFIDZH",
+  KETUA_YAYASAN: "Ketua Yayasan",
+  KETUA_TPA: "Ketua TPA",
+  KETUA_TAHFIDZH: "Ketua TAHFIDZH",
+};
+
 export default async function TeachersPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const { supabase } = await requireRole(["ADMIN", "KETUA_YAYASAN"]);
   const [{ data: teachers }, { data: additionalRoles }] = await Promise.all([
-     supabase.from("profiles").select("id, full_name, email, phone, role, status, created_at").in("role", ["GURU", "GURU_TPA", "GURU_TAHFIDZH", "KETUA_YAYASAN"]).order("created_at", { ascending: false }),
+    supabase.from("profiles").select("id, full_name, email, phone, role, status, created_at").in("role", ["ADMIN", "GURU", "GURU_TPA", "GURU_TAHFIDZH", "KETUA_YAYASAN", "KETUA_TPA", "KETUA_TAHFIDZH"]).order("created_at", { ascending: false }),
     supabase.from("user_roles").select("user_id, role"),
   ]);
 
@@ -32,14 +42,14 @@ export default async function TeachersPage({ searchParams }: PageProps) {
               <label className="block text-sm font-semibold text-[#112b45]">Email login *<input name="email" type="email" required className="mt-1.5 w-full rounded-lg border border-[#c8d7e3] px-3 py-2 text-sm font-normal" /></label>
               <label className="block text-sm font-semibold text-[#112b45]">Password awal *<input name="password" type="password" minLength={8} required className="mt-1.5 w-full rounded-lg border border-[#c8d7e3] px-3 py-2 text-sm font-normal" placeholder="Minimal 8 karakter" /></label>
               <label className="block text-sm font-semibold text-[#112b45]">Nomor HP (opsional)<input name="phone" className="mt-1.5 w-full rounded-lg border border-[#c8d7e3] px-3 py-2 text-sm font-normal" /></label>
-              <label className="block text-sm font-semibold text-[#112b45]">Role utama<select name="role" className="mt-1.5 w-full rounded-lg border border-[#c8d7e3] px-3 py-2 text-sm font-normal"><option value="GURU_TPA">Guru TPA</option><option value="GURU_TAHFIDZH">Guru TAHFIDZH</option><option value="KETUA_YAYASAN">Ketua Yayasan</option></select></label>
-              <fieldset className="space-y-2"><legend className="text-sm font-semibold text-[#112b45]">Role tambahan</legend><label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="role_guru_tpa" /> Guru TPA</label><label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="role_guru_tahfizh" /> Guru TAHFIDZH</label><label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="role_ketua_tpa" /> Ketua TPA</label><label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="role_ketua_tahfizh" /> Ketua TAHFIDZH</label></fieldset>
+              <label className="block text-sm font-semibold text-[#112b45]">Role utama *<select name="role" required className="mt-1.5 w-full rounded-lg border border-[#c8d7e3] px-3 py-2 text-sm font-normal"><option value="KETUA_YAYASAN">Ketua Yayasan</option><option value="KETUA_TPA">Ketua TPA</option><option value="KETUA_TAHFIDZH">Ketua TAHFIDZH</option><option value="GURU_TPA">Guru TPA</option><option value="GURU_TAHFIDZH">Guru TAHFIDZH</option></select></label>
+              <fieldset className="space-y-2"><legend className="text-sm font-semibold text-[#112b45]">Role tambahan (jabatan rangkap)</legend><p className="text-xs text-slate-500">Pilih hanya jika pemegang jabatan utama juga bertugas mengajar.</p><label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="role_guru_tpa" /> Guru TPA</label><label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="role_guru_tahfizh" /> Guru TAHFIDZH</label></fieldset>
               <button className="w-full rounded-lg bg-[#e52335] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#c91d2e]">Buat akun guru</button>
             </form>
           </section>
           <section className="rounded-xl border border-[#d8e3ec] bg-white shadow-sm">
             <div className="border-b border-[#d8e3ec] px-5 py-4"><h2 className="font-bold text-[#112b45]">Daftar guru</h2><p className="mt-1 text-sm text-slate-500">{teachers?.length ?? 0} akun terdaftar</p></div>
-            <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-[#f7fafc] text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-5 py-3">Nama</th><th className="px-5 py-3">Kontak</th><th className="px-5 py-3">Role utama</th><th className="px-5 py-3">Status</th></tr></thead><tbody className="divide-y divide-[#d8e3ec]">{teachers?.map((teacher) => <tr key={teacher.id}><td className="px-5 py-4 font-semibold text-[#112b45]">{teacher.full_name}<RoleEditor userId={teacher.id} primaryRole={teacher.role} additionalRoles={(additionalRoles ?? []).filter((item) => item.user_id === teacher.id).map((item) => item.role)} /></td><td className="px-5 py-4 text-slate-600">{teacher.email ?? teacher.phone ?? "-"}</td><td className="px-5 py-4 text-slate-600">{teacher.role}</td><td className="px-5 py-4"><span className="rounded-full bg-[#effaf5] px-2.5 py-1 text-xs font-semibold text-[#087443]">{teacher.status}</span></td></tr>)}</tbody></table></div>
+            <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-[#f7fafc] text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-5 py-3">Nama</th><th className="px-5 py-3">Kontak</th><th className="px-5 py-3">Role utama</th><th className="px-5 py-3">Status</th></tr></thead><tbody className="divide-y divide-[#d8e3ec]">{teachers?.map((teacher) => <tr key={teacher.id}><td className="px-5 py-4 font-semibold text-[#112b45]">{teacher.full_name}<RoleEditor userId={teacher.id} primaryRole={teacher.role} additionalRoles={(additionalRoles ?? []).filter((item) => item.user_id === teacher.id).map((item) => item.role)} /></td><td className="px-5 py-4 text-slate-600">{teacher.email ?? teacher.phone ?? "-"}</td><td className="px-5 py-4 font-semibold text-[#147fbd]">{roleLabels[teacher.role] ?? teacher.role}</td><td className="px-5 py-4"><span className="rounded-full bg-[#effaf5] px-2.5 py-1 text-xs font-semibold text-[#087443]">{teacher.status}</span></td></tr>)}</tbody></table></div>
           </section>
         </div>
       </div>
