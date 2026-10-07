@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { requireRole } from "@/lib/auth/authorization";
 
 const studentSchema = z.object({
   full_name: z.string().trim().min(2).max(120),
@@ -55,4 +57,35 @@ export async function createStudent(formData: FormData) {
 
   revalidatePath("/admin/santri");
   redirect("/admin/santri?success=Santri%20berhasil%20ditambahkan");
+}
+
+const renameStudentSchema = z.object({
+  student_id: z.string().uuid(),
+  full_name: z.string().trim().min(2).max(120),
+});
+
+export async function updateStudentName(formData: FormData) {
+  const { supabase, user } = await requireRole(["ADMIN", "GURU", "GURU_TPA", "KETUA_TPA"]);
+  const parsed = renameStudentSchema.safeParse(Object.fromEntries(formData.entries()));
+  if (!parsed.success) redirect("/admin/santri?error=Nama%20santri%20tidak%20valid");
+
+  const { data: student } = await supabase.from("students").select("id, branch, program_id").eq("id", parsed.data.student_id).maybeSingle();
+  if (!student || student.branch !== "GOWA") redirect("/admin/santri?error=Santri%20Gowa%20tidak%20ditemukan");
+
+  const { data: program } = student.program_id
+    ? await supabase.from("programs").select("name").eq("id", student.program_id).maybeSingle()
+    : { data: null };
+  if (program?.name.toUpperCase() !== "TPA") redirect("/admin/santri?error=Nama%20hanya%20dapat%20diedit%20dari%20modul%20santri%20TPA");
+
+  const adminClient = createAdminClient();
+  const { error } = await adminClient.from("students").update({
+    full_name: parsed.data.full_name,
+    updated_by: user.id,
+    updated_at: new Date().toISOString(),
+  }).eq("id", student.id).eq("branch", "GOWA");
+
+  if (error) redirect(`/admin/santri?error=${encodeURIComponent("Nama santri gagal diperbarui")}`);
+  revalidatePath("/admin/santri");
+  revalidatePath("/admin/tpa");
+  redirect("/admin/santri?success=Nama%20santri%20berhasil%20diperbarui");
 }

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { createStudent } from "./actions";
+import { createStudent, updateStudentName } from "./actions";
+import { requireRole } from "@/lib/auth/authorization";
 
 interface PageProps {
   searchParams: Promise<{ error?: string; success?: string }>;
@@ -13,11 +14,15 @@ function programName(value: ProgramRelation | ProgramRelation[] | null) {
   return Array.isArray(value) ? value[0]?.name ?? "Belum ditentukan" : value?.name ?? "Belum ditentukan";
 }
 
+function isTpaProgram(value: ProgramRelation | ProgramRelation[] | null) {
+  return programName(value).toUpperCase() === "TPA";
+}
+
 export default async function StudentsPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const supabase = await createClient();
+  const { supabase } = await requireRole(["ADMIN", "GURU", "GURU_TPA", "KETUA_TPA"]);
   const [{ data: students }, { data: programs }] = await Promise.all([
-    supabase.from("students").select("id, nis, public_code, full_name, gender, status, branch, programs(name)").order("created_at", { ascending: false }),
+    supabase.from("students").select("id, nis, public_code, full_name, gender, status, branch, program_id, programs(name)").order("created_at", { ascending: false }),
     supabase.from("programs").select("id, name").eq("is_active", true).order("name"),
   ]);
 
@@ -44,7 +49,7 @@ export default async function StudentsPage({ searchParams }: PageProps) {
           </section>
           <section className="rounded-xl border border-[#d8e3ec] bg-white shadow-sm">
             <div className="border-b border-[#d8e3ec] px-5 py-4"><h2 className="font-bold text-[#112b45]">Daftar santri</h2><p className="mt-1 text-sm text-slate-500">{students?.length ?? 0} data tersimpan</p></div>
-            <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-[#f7fafc] text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-5 py-3">Santri</th><th className="px-5 py-3">NIS</th><th className="px-5 py-3">Program</th><th className="px-5 py-3">Cabang</th><th className="px-5 py-3">Kode publik</th><th className="px-5 py-3">Status</th></tr></thead><tbody className="divide-y divide-[#d8e3ec]">{students?.map((student) => <tr key={student.id}><td className="px-5 py-4 font-semibold text-[#112b45]">{student.full_name}</td><td className="px-5 py-4 text-slate-600">{student.nis ?? "Belum diisi"}</td><td className="px-5 py-4 text-slate-600">{programName(student.programs as ProgramRelation | ProgramRelation[] | null)}</td><td className="px-5 py-4 text-slate-600">{student.branch === "GOWA" ? "Gowa (Pusat)" : student.branch}</td><td className="px-5 py-4 text-xs font-semibold text-[#147fbd]">{student.public_code}</td><td className="px-5 py-4"><span className="rounded-full bg-[#effaf5] px-2.5 py-1 text-xs font-semibold text-[#087443]">{student.status}</span></td></tr>)}</tbody></table></div>
+            <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-[#f7fafc] text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-5 py-3">Santri</th><th className="px-5 py-3">NIS</th><th className="px-5 py-3">Program</th><th className="px-5 py-3">Cabang</th><th className="px-5 py-3">Kode publik</th><th className="px-5 py-3">Status</th></tr></thead><tbody className="divide-y divide-[#d8e3ec]">{students?.map((student) => { const programRelation = student.programs as ProgramRelation | ProgramRelation[] | null; return <tr key={student.id}><td className="px-5 py-4 font-semibold text-[#112b45]">{student.full_name}{student.branch === "GOWA" && isTpaProgram(programRelation) && <details className="mt-2"><summary className="cursor-pointer text-xs font-bold text-[#147fbd]">Edit nama</summary><form action={updateStudentName} className="mt-2 flex min-w-56 gap-2"><input type="hidden" name="student_id" value={student.id} /><input name="full_name" defaultValue={student.full_name} required minLength={2} maxLength={120} className="min-w-0 rounded border border-[#c8d7e3] px-2 py-1 text-xs font-normal" /><button className="rounded bg-[#e52335] px-2 py-1 text-xs font-bold text-white">Simpan</button></form></details>}</td><td className="px-5 py-4 text-slate-600">{student.nis ?? "Belum diisi"}</td><td className="px-5 py-4 text-slate-600">{programName(programRelation)}</td><td className="px-5 py-4 text-slate-600">{student.branch === "GOWA" ? "Gowa (Pusat)" : student.branch}</td><td className="px-5 py-4 text-xs font-semibold text-[#147fbd]">{student.public_code}</td><td className="px-5 py-4"><span className="rounded-full bg-[#effaf5] px-2.5 py-1 text-xs font-semibold text-[#087443]">{student.status}</span></td></tr>; })}</tbody></table></div>
           </section>
         </div>
       </div>
