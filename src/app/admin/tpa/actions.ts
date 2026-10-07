@@ -28,11 +28,13 @@ const readingSchema = z.object({
 });
 
 export async function createReadingAssessment(formData: FormData) {
-  const { supabase, user } = await requireRole(["ADMIN", "GURU", "GURU_TPA", "KETUA_TPA"]);
+  const { supabase, user, roles } = await requireRole(["ADMIN", "GURU", "GURU_TPA", "KETUA_TPA"]);
   const parsed = readingSchema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) redirect("/admin/tpa?error=Periksa%20kembali%20data%20dan%20nilai%201-100");
 
-  const { data: student } = await supabase.from("students").select("program_id, class_id").eq("id", parsed.data.student_id).single();
+  let studentQuery = supabase.from("students").select("program_id, class_id, branch").eq("id", parsed.data.student_id);
+  if (!roles.includes("ADMIN")) studentQuery = studentQuery.eq("branch", "GOWA");
+  const { data: student } = await studentQuery.single();
   if (!student) redirect("/admin/tpa?error=Santri%20tidak%20ditemukan");
   const { error } = await supabase.from("reading_assessments").insert({
     ...parsed.data,

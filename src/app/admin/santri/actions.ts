@@ -14,6 +14,7 @@ const studentSchema = z.object({
   guardian_phone: z.preprocess((value) => value || undefined, z.string().trim().max(24).optional()),
   program_id: z.preprocess((value) => value || undefined, z.string().uuid().optional()),
   class_id: z.preprocess((value) => value || undefined, z.string().uuid().optional()),
+  branch: z.enum(["GOWA", "BARRU", "BULUKUMBA"]).default("GOWA"),
 });
 
 export async function createStudent(formData: FormData) {
@@ -35,6 +36,7 @@ export async function createStudent(formData: FormData) {
   const { error } = await supabase.from("students").insert({
     ...parsed.data,
     public_code: publicCode,
+    branch: parsed.data.branch,
     nickname: parsed.data.nickname || null,
     nis: parsed.data.nis || null,
     gender: parsed.data.gender || null,

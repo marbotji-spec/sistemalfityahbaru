@@ -14,11 +14,13 @@ const attendanceSchema = z.object({
 });
 
 export async function saveStudentAttendance(formData: FormData) {
-  const { supabase, user } = await requireRole(["ADMIN", "GURU", "GURU_TPA", "GURU_TAHFIDZH", "KETUA_TPA", "KETUA_TAHFIDZH"]);
+  const { supabase, user, roles } = await requireRole(["ADMIN", "GURU", "GURU_TPA", "GURU_TAHFIDZH", "KETUA_TPA", "KETUA_TAHFIDZH"]);
   const parsed = attendanceSchema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) redirect("/admin/absensi?error=Data%20absensi%20belum%20valid");
 
-  const { data: student } = await supabase.from("students").select("program_id, class_id").eq("id", parsed.data.student_id).single();
+  let studentQuery = supabase.from("students").select("program_id, class_id, branch").eq("id", parsed.data.student_id);
+  if (!roles.includes("ADMIN")) studentQuery = studentQuery.eq("branch", "GOWA");
+  const { data: student } = await studentQuery.single();
   if (!student) redirect("/admin/absensi?error=Santri%20tidak%20ditemukan");
   const { error } = await supabase.from("student_attendance").upsert({
     ...parsed.data,

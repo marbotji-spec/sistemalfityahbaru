@@ -24,11 +24,13 @@ const memorizationSchema = z.object({
 }).refine((data) => data.verse_end >= data.verse_start, { path: ["verse_end"], message: "Ayat akhir harus >= ayat awal" });
 
 export async function createMemorizationRecord(formData: FormData) {
-  const { supabase, user } = await requireRole(["ADMIN", "GURU", "GURU_TAHFIDZH", "KETUA_TAHFIDZH"]);
+  const { supabase, user, roles } = await requireRole(["ADMIN", "GURU", "GURU_TAHFIDZH", "KETUA_TAHFIDZH"]);
   const parsed = memorizationSchema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) redirect("/admin/hafalan?error=Periksa%20surah%2C%20rentang%20ayat%2C%20dan%20nilai%201-100");
 
-  const { data: student } = await supabase.from("students").select("program_id, class_id").eq("id", parsed.data.student_id).single();
+  let studentQuery = supabase.from("students").select("program_id, class_id, branch").eq("id", parsed.data.student_id);
+  if (!roles.includes("ADMIN")) studentQuery = studentQuery.eq("branch", "GOWA");
+  const { data: student } = await studentQuery.single();
   if (!student) redirect("/admin/hafalan?error=Santri%20tidak%20ditemukan");
   const { error } = await supabase.from("memorization_records").insert({
     ...parsed.data,
