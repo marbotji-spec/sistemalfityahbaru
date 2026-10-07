@@ -20,8 +20,16 @@ export default async function DashboardPage() {
   const primaryRole = (profile?.role ?? "GURU") as AppRole;
   const roles = [primaryRole, ...(additionalRoles ?? []).map((item) => item.role)] as AppRole[];
   const isAdmin = roles.includes("ADMIN");
+  const canSeeAllBranches = roles.includes("ADMIN") || roles.includes("KETUA_YAYASAN");
   const isTpa = roles.includes("GURU") || roles.includes("GURU_TPA") || roles.includes("KETUA_TPA");
   const isTahfizh = roles.includes("GURU") || roles.includes("GURU_TAHFIDZH") || roles.includes("KETUA_TAHFIDZH");
+  const today = new Date().toISOString().slice(0, 10);
+  const [studentAttendance, teacherAttendance, students] = await Promise.all([
+    (() => { let query = supabase.from("student_attendance").select("status, students!inner(branch)").eq("attendance_date", today); if (!canSeeAllBranches) query = query.eq("students.branch", "GOWA"); return query; })(),
+    supabase.from("teacher_attendance").select("status").eq("attendance_date", today),
+    (() => { let query = supabase.from("students").select("id", { count: "exact", head: true }).eq("status", "AKTIF"); if (!canSeeAllBranches) query = query.eq("branch", "GOWA"); return query; })(),
+  ]);
+  const countStatus = (rows: { status: string }[] | null | undefined, status: string) => rows?.filter((row) => row.status === status).length ?? 0;
 
   return (
     <main className="min-h-screen bg-[#eef7fc]">
@@ -36,7 +44,7 @@ export default async function DashboardPage() {
         {!profile && !profileError && <div className="mb-6 rounded-lg border border-[#f3b5bc] bg-[#fff1f2] p-4 text-sm text-[#9f1d2b]"><p className="font-bold">Akun belum memiliki profil aplikasi</p><p className="mt-1">Jalankan migration profiles atau hubungi admin yayasan.</p></div>}
         <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
           <RoleMenu roles={roles} primaryRole={primaryRole} />
-          <div><p className="text-slate-500">Selamat datang, <span className="font-semibold text-[#112b45]">{profile?.full_name ?? user.email}</span>.</p><div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <div><p className="text-slate-500">Selamat datang, <span className="font-semibold text-[#112b45]">{profile?.full_name ?? user.email}</span>.</p><section className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3"><article className="rounded-xl border border-[#c8d7e3] bg-white p-4"><p className="text-xs font-semibold uppercase text-slate-500">Santri aktif{canSeeAllBranches ? " · Semua cabang" : " · Gowa"}</p><p className="mt-2 text-2xl font-bold text-[#112b45]">{students.count ?? 0}</p></article><article className="rounded-xl border border-[#c8d7e3] bg-white p-4"><p className="text-xs font-semibold uppercase text-slate-500">Santri hadir hari ini</p><p className="mt-2 text-2xl font-bold text-[#147fbd]">{countStatus(studentAttendance.data, "HADIR")}</p><p className="mt-1 text-xs text-slate-500">Sakit {countStatus(studentAttendance.data, "SAKIT")} · Izin {countStatus(studentAttendance.data, "IZIN")} · Alpa {countStatus(studentAttendance.data, "ALPA")}</p><Link href="/admin/absensi" className="mt-3 inline-block text-xs font-bold text-[#147fbd]">Buka absensi santri</Link></article><article className="rounded-xl border border-[#c8d7e3] bg-white p-4"><p className="text-xs font-semibold uppercase text-slate-500">Guru hadir hari ini</p><p className="mt-2 text-2xl font-bold text-[#e52335]">{countStatus(teacherAttendance.data, "HADIR")}</p><p className="mt-1 text-xs text-slate-500">Sakit {countStatus(teacherAttendance.data, "SAKIT")} · Izin {countStatus(teacherAttendance.data, "IZIN")} · Alpa {countStatus(teacherAttendance.data, "ALPA")}</p>{canSeeAllBranches && <Link href="/admin/absensi-guru" className="mt-3 inline-block text-xs font-bold text-[#147fbd]">Buka absensi guru</Link>}</article></section><div className="mt-8 grid gap-4 sm:grid-cols-2">
           {[
             ...(isAdmin ? [["Data Santri", "/admin/santri", "Kelola data dan NIS santri."]] : []),
             ...(isAdmin ? [["Data Guru", "/admin/guru", "Kelola akun dan pergantian role."]] : []),

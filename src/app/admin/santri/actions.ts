@@ -32,7 +32,7 @@ export async function createStudent(formData: FormData) {
   if (parsed.data.program_id) {
     const { data: program } = await supabase.from("programs").select("name").eq("id", parsed.data.program_id).maybeSingle();
     const programName = program?.name?.toUpperCase() ?? "";
-    programPrefix = programName.includes("TAHF") ? "TAHFIDZH" : programName.includes("TPA") ? "TPA" : "SANTRI";
+    programPrefix = programName.includes("TAHF") ? "TF" : programName.includes("TPA") ? "TPA" : "SANTRI";
   }
   const publicCode = `${programPrefix}-${new Date().getFullYear()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
   const { error } = await supabase.from("students").insert({

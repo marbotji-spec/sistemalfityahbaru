@@ -49,3 +49,26 @@ export async function createReadingAssessment(formData: FormData) {
   revalidatePath("/admin/tpa");
   redirect("/admin/tpa?success=Penilaian%20bacaan%20tersimpan");
 }
+
+export async function updateReadingAssessment(formData: FormData) {
+  const { supabase, roles } = await requireRole(["ADMIN", "KETUA_YAYASAN", "GURU", "GURU_TPA", "KETUA_TPA"]);
+  const recordId = String(formData.get("record_id") ?? "");
+  const parsed = readingSchema.safeParse(Object.fromEntries(formData.entries()));
+  if (!z.string().uuid().safeParse(recordId).success || !parsed.success) redirect("/admin/tpa?error=Data%20koreksi%20tidak%20valid");
+
+  let studentQuery = supabase.from("students").select("branch").eq("id", parsed.data.student_id);
+  if (!roles.includes("ADMIN") && !roles.includes("KETUA_YAYASAN")) studentQuery = studentQuery.eq("branch", "GOWA");
+  const { data: student } = await studentQuery.maybeSingle();
+  if (!student) redirect("/admin/tpa?error=Santri%20tidak%20ditemukan%20dalam%20cakupan%20akses");
+
+  const { student_id, ...values } = parsed.data;
+  const { error } = await supabase.from("reading_assessments").update({
+    ...values,
+    iqra_level: values.iqra_level || null,
+    surah_name: values.surah_name || null,
+    teacher_note: values.teacher_note || null,
+  }).eq("id", recordId).eq("student_id", student_id);
+  if (error) redirect("/admin/tpa?error=Koreksi%20penilaian%20gagal%20disimpan");
+  revalidatePath("/admin/tpa");
+  redirect("/admin/tpa?success=Penilaian%20berhasil%20dikoreksi");
+}
